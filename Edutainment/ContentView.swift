@@ -16,80 +16,74 @@ struct ContentView: View {
     @State private var answer = 0
     
     var body: some View {
-        VStack {
-            Stepper("\(numOfQuestions.formatted()) Questions", value: $numOfQuestions, in: 5...20, step: 5)
-            
-            VStack
-            {
-                
-               
-//                ForEach(2..<13)
-//                {
-//                    _ in
-//                    HStack
-//                    {
-//                        Button()
-//                        { } label: {
-//                            Text("\(multiplerNum)")
-//                                .font(.system(size: 36, design: .rounded))
-//                        }.buttonStyle(.bordered)
-//                            .foregroundColor(.pink)
-//                        
-//                        Button()
-//                        { } label: {
-//                            Text("\(multiplerNum + 1)")
-//                                .font(.system(size: 36, design: .rounded))
-//                        }.frame(width: 200, height: 25).buttonStyle(.bordered)
-//                            .foregroundColor(.pink)
-//                        
-//                        multiplerNum = multiplerNum + 1;
-//                    }
-//                    
-//
-//            
-//                }
-                Text("Please select a multipler")
-                Picker("Please select a number", selection: $selectedNumber)
-                {
-                    ForEach(2..<13)
-                    {
-                        Text("\($0)")
-                    }
-                }
-                
-                Button("Start", action: generateQuestions).buttonStyle(.bordered).foregroundColor(.pink)
-                
-                if isActive{
-                    Section{
-                        Text(question)
-                        TextField("Enter your answer", value: $answer, format: .number)
-                    }
-                    
-//                    Button("Continue", action: question = askQuestion)
-                    
-                }
-            }
-            
-        }
-        .padding()
-    }
-    
-    func generateQuestions()
-    {
-        isActive = true;
-        if(numOfQuestions == 0)
+        NavigationView
         {
-            isActive = false
+            VStack {
+                Stepper("\(numOfQuestions.formatted()) Questions", value: $numOfQuestions, in: 5...20, step: 5)
+                
+                VStack
+                {
+                    Text("Please select a multipler")
+                    Picker("Please select a number", selection: $selectedNumber)
+                    {
+                        ForEach(0..<13)
+                        {
+                            Text("\($0)")
+                        }
+                    }
+                    
+                    NavigationLink(destination: QuestionsView(questionLength: numOfQuestions, multiplier: selectedNumber), label: {
+                        Text("Start")
+                    })  .frame(width: 100, height: 50, alignment: .center)
+                        .foregroundColor(.white)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 16)
+                                .stroke(.indigo, lineWidth: 6)
+                        )
+                        .navigationBarTitle("Edutainment")
+                    }
+                }
+                
+            }
+            .padding()
         }
-        question = askQuestion()
-        return
+}
+
+struct QuestionsView : View {
+    
+    @State var questionLength : Int
+    @State var multiplier : Int
+    @State private var userResponse = 0
+    @State private var randomNum : Int = Int.random(in: 2...10)
+    @State private var answer = 0
+    
+    
+    var body: some View {
+        
+        Section
+        {
+            generateQuestion()
+            TextField("Please enter your answer", value: $userResponse, format: .number).frame(width: 250, height: 75).background(.white).foregroundColor(.black).font(.subheadline)
+        }.onSubmit {
+            if(userResponse == answer)
+            {
+               print("Correct")
+               questionLength -= 1
+//                generateQuestion()
+            }
+        }
+        
     }
     
-    func askQuestion() -> String
+    func generateQuestion() -> some View
     {
-        var numberTwo = Int.random(in: selectedNumber..<100)
-        return "\($selectedNumber) x \(numberTwo)"
+        randomNum = Int.random(in: 2...10)
+        print(randomNum)
+        answer = multiplier * randomNum
+        return Text("\(multiplier)  *  \(randomNum)").frame(width: 150, height: 75).font(.title).fontDesign(.rounded)
     }
+    
+    
 }
 
 struct ContentView_Previews: PreviewProvider {
