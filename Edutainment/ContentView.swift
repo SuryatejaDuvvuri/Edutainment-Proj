@@ -12,11 +12,9 @@ struct ContentView: View {
     @State private var numOfQuestions = 5
     @State private var selectedNumber = 2
     @State private var isActive = false
-    @State private var question = ""
-    @State private var answer = 0
     
     var body: some View {
-        NavigationView
+        NavigationStack
         {
             VStack {
                 Stepper("\(numOfQuestions.formatted()) Questions", value: $numOfQuestions, in: 5...20, step: 5)
@@ -31,6 +29,7 @@ struct ContentView: View {
                             Text("\($0)")
                         }
                     }
+                 
                     
                     NavigationLink(destination: QuestionsView(questionLength: numOfQuestions, multiplier: selectedNumber), label: {
                         Text("Start")
@@ -40,8 +39,10 @@ struct ContentView: View {
                             RoundedRectangle(cornerRadius: 16)
                                 .stroke(.indigo, lineWidth: 6)
                         )
-                        .navigationBarTitle("Edutainment")
+                        .navigationBarTitle("Home page")
                     }
+               
+                    
                 }
                 
             }
@@ -54,33 +55,91 @@ struct QuestionsView : View {
     @State var questionLength : Int
     @State var multiplier : Int
     @State private var userResponse = 0
-    @State private var randomNum : Int = Int.random(in: 2...10)
+    @State private var randomNum : Int = 0
     @State private var answer = 0
+    @State private var correctAns = 0
+    @State private var gameOver : Bool = false
+    @State private var gotCorrect : Bool = false
+    @State private var clickedEnter : Bool = false
+    @State private var message = ""
     
     
     var body: some View {
         
+        
         Section
         {
-            generateQuestion()
+            Text("\(multiplier)  *  \(randomNum)").frame(width: 150, height: 75).font(.title).fontDesign(.rounded)
             TextField("Please enter your answer", value: $userResponse, format: .number).frame(width: 250, height: 75).background(.white).foregroundColor(.black).font(.subheadline)
-        }.onSubmit {
-            if(userResponse == answer)
-            {
-               print("Correct")
-               questionLength -= 1
-//                generateQuestion()
-            }
+        }
+        .onAppear(perform: generateQuestion)
+        .alert("Game Over", isPresented: $gameOver) {
+            Button("OK", role: .cancel, action: {
+                userResponse = 0
+                correctAns = 0
+                gameOver = false
+                randomNum = 0
+                answer = 0
+                
+            })
+        } message:
+        {
+            Text("Congratulations! You got \(correctAns) correct. Press Home page to restart the game.")
+        }
+        
+        Button("Submit", action:{clickedEnter = true
+        generateQuestion()})
+        
+        if clickedEnter
+        {
+            checkAnswer()
+        }
+        else
+        {
+            Text("")
+        }
+        
+       
+       
+        
+    }
+    
+    func checkAnswer() -> some View
+    {
+        if(userResponse == answer)
+        {
+            gotCorrect = true
+            correctAns += 1
+        }
+        
+        if(questionLength == 0)
+        {
+            gameOver.toggle()
+        }
+        else
+        {
+            questionLength -= 1
+        }
+        
+        if gotCorrect
+        {
+            return  Text("Correct! \(Image(systemName: "checkmark.circle"))")
+                .onAppear(perform:generateQuestion)
+        }
+        else
+        {
+            return Text("Correct answer is \(answer)").onAppear(perform:
+                generateQuestion)
         }
         
     }
     
-    func generateQuestion() -> some View
+    func generateQuestion()
     {
         randomNum = Int.random(in: 2...10)
-        print(randomNum)
         answer = multiplier * randomNum
-        return Text("\(multiplier)  *  \(randomNum)").frame(width: 150, height: 75).font(.title).fontDesign(.rounded)
+        gotCorrect = false
+        clickedEnter = false
     }
     
     
